@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Check for inputs
+if [ -z "$NEW_USER" ] || [ -z "$PUBLIC_KEY" ]; then
+    echo "Usage: NEW_USER=<username> PUBLIC_KEY=<public_key> $0"
+    exit 1
+fi
+
+# Check for user existence. If true - exit
+if id "$NEW_USER" &>/dev/null; then
+    echo "User $NEW_USER already exists."
+    exit 1
+fi
+
+# Create user
+sudo useradd -m $NEW_USER
+
+# Create user's directory in /home
+# There is a way to change directory but it might cost you time and anxiety
+sudo mkdir -p /home/$NEW_USER/.ssh
+
+# Add user's ssh
+echo $PUBLIC_KEY | sudo tee -a /home/$NEW_USER/.ssh/authorized_keys > /dev/null
+
+# Change access to user's directory
+sudo chown -R $NEW_USER:$NEW_USER /home/$NEW_USER/.ssh
+sudo chmod 700 /home/$NEW_USER/.ssh
+sudo chmod 600 /home/$NEW_USER/.ssh/authorized_keys
